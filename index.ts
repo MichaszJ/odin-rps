@@ -8,62 +8,107 @@ function getComputerChoice(): string {
         choice = 'paper';
     } else {
         choice = 'scissors';
-    };
+    }
 
     return choice
 }
 
+interface RoundResult {
+    roundNumber: number;
+    result: 'win' | 'loss' | 'tie';
+    playerChoice: string;
+    computerChoice: string;
+}
+
+let results: RoundResult[] = [];
+
 function playRound(playerSelection: string, computerSelection = getComputerChoice()) {
-    let result: string;
+    let result: RoundResult;
+    const roundNum = results.length + 1;
 
     if ((playerSelection.toLowerCase() == 'rock' && computerSelection == 'scissors') || (playerSelection.toLowerCase() == 'paper' && computerSelection == 'rock') || (playerSelection.toLowerCase() == 'scissors' && computerSelection == 'paper')) {
-        result = `You Win! ${playerSelection} beats ${computerSelection}`;
+        result = { roundNumber: roundNum, result: 'win', playerChoice: playerSelection.toLowerCase(), computerChoice: computerSelection };
     } else if (playerSelection.toLowerCase() == computerSelection) {
-        result = `It's a Tie! You both chose ${playerSelection}`;
+        result = { roundNumber: roundNum, result: 'tie', playerChoice: playerSelection.toLowerCase(), computerChoice: computerSelection };
     } else {
-        result = `You Lose! ${computerSelection} beats ${playerSelection}`;
-    };
+        result = { roundNumber: roundNum, result: 'loss', playerChoice: playerSelection.toLowerCase(), computerChoice: computerSelection };
+    }
 
     return result;
 }
 
-function game(rounds = 5): void {
-    let results = [];
+const resultListElement = document.querySelector<HTMLDivElement>('.result-list');
+const scoreElement = document.querySelector<HTMLDivElement>('.score');
+const gameElement = document.querySelector<HTMLDivElement>('.game-result');
 
-    for (let i = 0; i < rounds; i++) {
-        const playerSelection = prompt('Enter your move');
-        const roundResult = playRound(playerSelection!.toString());
+function drawResults(): void {
+    if (resultListElement != null && scoreElement != null && gameElement != null && results.length > 0) {
+        let wins: number = 0;
+        let losses: number = 0;
 
-        console.log(`Round ${i + 1}`);
-        console.log(roundResult);
+        for (const round of results) {
+            if (round.result == 'win') {
+                wins++;
+            } else if (round.result == 'loss') {
+                losses++;
+            }
+        }
 
-        if (roundResult.includes('Tie')) {
-            results.push(2);
-        } else if (roundResult.includes('Win')) {
-            results.push(1);
-        } else {
-            results.push(0);
-        };
-    };
+        scoreElement.innerText = `Wins: ${wins} | Losses: ${losses}`;
 
-    let wins = 0;
-    let losses = 0;
+        resultListElement.innerHTML = '';
+        const revArray = results.slice().reverse();
 
-    for (let i = 0; i < rounds; i++) {
-        if (results[i] == 1) {
-            wins++;
-        } else if (results[i] == 0) {
-            losses++;
-        };
-    };
+        for (const round of revArray) {
+            const roundElement = document.createElement('p');
+            const roundNode = document.createTextNode(`Round ${round.roundNumber}: ${round.result}! ${round.playerChoice} vs. ${round.computerChoice}`);
+            roundElement.appendChild(roundNode);
 
-    if (wins == losses) {
-        console.log(`It's a Tie! You won/lost ${wins} rounds`);
-    } else if (wins > losses) {
-        console.log(`You Win! You won ${wins} rounds and lost ${losses} rounds`);
-    } else {
-        console.log(`You Lost! You lost ${losses} rounds and won ${wins} rounds`);
+            resultListElement.appendChild(roundElement);
+        }
+
+        if (results.length == 5) {
+            if (wins > losses) {
+                gameElement.innerText = 'Congratulations! You Won';
+            } else if (wins < losses) {
+                gameElement.innerText = 'Sorry! You Lost';
+            } else {
+                gameElement.innerText = 'It\'s a Tie! At least you didn\'t lose';
+            }
+        }
     }
 }
 
-game();
+const buttonRock = document.querySelector<HTMLButtonElement>(".btn-rock");
+const paperRock = document.querySelector<HTMLButtonElement>(".btn-paper");
+const scissorsRock = document.querySelector<HTMLButtonElement>(".btn-scissors");
+
+if (buttonRock != null) {
+    buttonRock.addEventListener('click', () => {
+        if (results.length < 5) {
+            const roundResult = playRound('rock');
+            results.push(roundResult);
+            drawResults();
+        }
+    })
+}
+
+if (paperRock != null) {
+    paperRock.addEventListener('click', () => {
+        if (results.length < 5) {
+            const roundResult = playRound('paper');
+            results.push(roundResult);
+            drawResults();
+        }
+    })
+}
+
+if (scissorsRock != null) {
+    scissorsRock.addEventListener('click', () => {
+        if (results.length < 5) {
+            const roundResult = playRound('scissors');
+            results.push(roundResult);
+            drawResults();
+        }
+    })
+}

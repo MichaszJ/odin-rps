@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "watch": true,
+        "lib": ["DOM", "ESNext", "ES7"],
+        "strict": true
+    }
+}
